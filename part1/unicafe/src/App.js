@@ -8,16 +8,29 @@ const Button = ({ handleClick, text }) => {
   )
 }
 
-const Statistics = ({ good, neutral, bad, all, avarage, positive }) => {
+const Statistics = ({ good, neutral, bad, all, average, positive }) => {
+  if (good === 0 & neutral === 0 & bad === 0) {
+    return (
+      <p>No feedback given</p>
+    )
+  }
   return (
-    <p>
-      good {good} <br />
-      neutral {neutral} <br />
-      bad {bad} <br />
-      all {all} <br />
-      avarage {avarage} <br />
-      positive {positive}
-    </p>
+    <table>
+      <tbody>
+        <tr><Statistic feedback="good" value={good} /></tr>
+        <tr><Statistic feedback="neutral" value={neutral} /></tr>
+        <tr><Statistic feedback="bad" value={bad} /></tr>
+        <tr><Statistic feedback="all" value={all} /></tr>
+        <tr><Statistic feedback="average" value={average} /></tr>
+        <tr><Statistic feedback="positive" value={positive + '%'} /></tr>
+      </tbody>
+    </table>
+  )
+}
+
+const Statistic = ({ feedback, value }) => {
+  return (
+    <td>{feedback} {value}</td>
   )
 }
 
@@ -36,7 +49,7 @@ const App = () => {
     setBad(bad + 1)
 
   const all = good + neutral + bad
-  const avarage = ((good - bad) / all) * 100
+  const average = ((good - bad) / all) * 100
   const positive = (good / all) * 100
 
   return (
@@ -46,7 +59,7 @@ const App = () => {
       <Button handleClick={handleNeutralClick} text="neutral" />
       <Button handleClick={handleBadClick} text="bad" />
       <h1>statistics</h1>
-      <Statistics good={good} neutral={neutral} bad={bad} all={all} avarage={avarage} positive={positive} />
+      <Statistics good={good} neutral={neutral} bad={bad} all={all} average={average} positive={positive} />
     </>
   )
 }
