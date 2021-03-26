@@ -1,64 +1,39 @@
 import React, { useState } from 'react'
+import Persons from './components/Persons'
+import Filter from './components/Filter'
+import PersonForm from './components/PersonForm'
 
 const App = () => {
   const [persons, setPersons] = useState([
-    {
-      name: 'Arto Hellas',
-      number: '+905554445522'
-    }
+    { name: 'Arto Hellas', number: '040-123456' },
+    { name: 'Ada Lovelace', number: '39-44-5323523' },
+    { name: 'Dan Abramov', number: '12-43-234345' },
+    { name: 'Mary Poppendieck', number: '39-23-6423122' }
   ])
-  const [newName, setNewName] = useState('')
-  const [newNumber, setNewNumber] = useState('')
 
-  const addPerson = (e) => {
-    e.preventDefault()
-    const personsArray = persons.map(e => e.name)
-    const personObject = {
-      name: newName,
-      number: newNumber
-    }
-    personsArray.includes(`${personObject.name}`) ?
-      alert(`${newName} is already added to phonebook`) :
-      setPersons(persons.concat(personObject))
-    setNewName('')
-    setNewNumber('')
-  }
+  const [filter, setFilter] = useState('')
+  const [filterPersons, setFilterPersons] = useState(persons)
 
-  const handleNameChange = (e) => {
-    setNewName(e.target.value)
-  }
-
-  const handleNumberChange = (e) => {
-    setNewNumber(e.target.value)
+  const handleFilterChange = (e) => {
+    setFilter(e.target.value)
+    setFilterPersons(persons.filter((person) =>
+      (person.name.toLowerCase().indexOf(e.target.value.toLowerCase()) !== -1)))
   }
 
   return (
     <div>
       <h2>Phonebook</h2>
-      <form onSubmit={addPerson}>
-        <div>
-          name: <input
-            value={newName}
-            onChange={handleNameChange}
-          /><br />
-          number: <input
-            value={newNumber}
-            onChange={handleNumberChange}
-          />
-        </div>
-        <div>
-          <button type="submit">add</button>
-        </div>
-      </form>
+      <Filter onChange={handleFilterChange} value={filter} />
+      <h2>add a new</h2>
+      <PersonForm persons={persons} setPersons={setPersons} />
       <h2>Numbers</h2>
       <table>
         <tbody>
-          {persons.map((e, i) =>
-            <tr key={i}>
-              <td>{e.name}</td>
-              <td>{e.number}</td>
-            </tr>
-          )}
+          {filter === '' ?
+            <Persons filterPerson={persons} />
+            :
+            <Persons filterPerson={filterPersons} />
+          }
         </tbody>
       </table>
     </div>
