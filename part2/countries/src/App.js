@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
+import Country from './components/country'
 
 const App = () => {
+  const [country, setCountry] = useState("")
   const [countries, setCountries] = useState([])
-
-  const [filter, setFilter] = useState('')
-  const [filterCountries, setFilterCountries] = useState(countries)
+  const [countriesFilter, setCountriesFilter] = useState([])
+  const [showCountry, setShowCountry] = useState({})
 
   useEffect(() => {
     axios
@@ -15,39 +16,44 @@ const App = () => {
       })
   }, [])
 
-  const handleFilterChange = (e) => {
-    setFilter(e.target.value)
-    setFilterCountries(countries.filter((country) =>
-      (country.name.toLowerCase().indexOf(e.target.value.toLowerCase()) !== -1)))
+  useEffect(() => {
+    setShowCountry(
+      countriesFilter.length === 1 ? { ...countriesFilter[0] } : {}
+    )
+  }, [countriesFilter])
+
+  const searchCountry = (e) => {
+    setCountry(e.target.value)
+    setCountriesFilter(
+      countries.filter(
+        (country) =>
+          country.name.toLowerCase().search(e.target.value.toLowerCase()) !== -1
+      )
+    )
+  }
+
+  const showCountries = () => {
+    return countriesFilter.map((country) => (
+      <p key={country.name}>
+        {country.name}
+        <button onClick={() => setShowCountry(country)}>show</button>
+      </p>
+    ))
   }
 
   return (
-    <div>
-      <div>
-        filter shown with <input onChange={handleFilterChange} value={filter}></input>
-      </div>
-      {filterCountries.length <= 10 ?
-        filterCountries.length === 1 ?
-          filterCountries.map(e => {
-            return (
-              <>
-                <h1>{e.name}</h1>
-                <p>capital {e.capital}</p>
-                <p>population {e.population}</p>
-                <h3>languages</h3>
-                <ul>
-                  {e.languages.map((leng, i) => <li key={i}>{leng.name}</li>)}
-                </ul>
-                <img style={{ width: 100 }} src={e.flag} alt="country flag" />
-              </>
-            )
-          })
-          :
-          filterCountries.map(e => <p>{e.name}</p>)
-        :
+    <>
+      <p>
+        find countries{" "}
+        <input value={country} onChange={searchCountry} />
+      </p>
+      {countriesFilter.length > 10 ? (
         <p>Too many matches, specify another filter</p>
-      }
-    </div>
+      ) : (
+        showCountries()
+      )}
+      {showCountry.name && <Country data={showCountry} />}
+    </>
   )
 }
 
