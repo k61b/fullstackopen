@@ -13,14 +13,28 @@ const PersonForm = ({ persons, setPersons }) => {
             number: newNumber
         }
         if (personsArray.includes(`${personObject.name}`)) {
-            alert(`${newName} is already added to phonebook`)
+            const oldPerson = persons.filter(e => e.name === newName)
+            const _id = oldPerson.map(e => e.id)[0]
+            const result = window.confirm(
+                `${newName} is already added to phonebook, replace the old number with a new one?
+                `)
+            if (result) {
+                personService
+                    .update(_id, personObject)
+                    .then(returnedPerson => {
+                        const newPersons = persons.map(person =>
+                            person.id !== returnedPerson.id ? person : returnedPerson
+                        )
+                        setPersons(newPersons)
+                    })
+            }
         } else {
             personService
                 .create(personObject)
                 .then(returnedPerson => setPersons(persons.concat(returnedPerson)))
+            setNewName('')
+            setNewNumber('')
         }
-        setNewName('')
-        setNewNumber('')
     }
 
     const handleNameChange = (e) => setNewName(e.target.value)
