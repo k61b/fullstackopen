@@ -53,9 +53,10 @@ const App = () => {
             )
             setPersons(newPersons)
           })
-        setMessage(
-          `Edited ${personObject.name}`
-        )
+        setMessage({
+          text: `Edited ${personObject.name}`,
+          type: "success",
+        })
         setTimeout(() => {
           setMessage(null)
         }, 3000)
@@ -66,9 +67,10 @@ const App = () => {
       personService
         .create(personObject)
         .then(returnedPerson => setPersons(persons.concat(returnedPerson)))
-      setMessage(
-        `Added ${personObject.name}`
-      )
+      setMessage({
+        text: `Added ${personObject.name}`,
+        type: "success",
+      })
       setTimeout(() => {
         setMessage(null)
       }, 3000)
@@ -96,9 +98,9 @@ const App = () => {
       <PersonForm addPerson={addPerson} data={addPersonData} />
       <h2>Numbers</h2>
       {filter === '' ?
-        <Persons filterPerson={persons} setPersons={setPersons} />
+        <Persons filterPerson={persons} setPersons={setPersons} setMessage={setMessage} />
         :
-        <Persons filterPerson={filterPersons} setPersons={setPersons} />
+        <Persons filterPerson={filterPersons} setPersons={setPersons} setMessage={setMessage} />
       }
     </div>
   )
