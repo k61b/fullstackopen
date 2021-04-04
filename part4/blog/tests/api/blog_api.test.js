@@ -7,79 +7,102 @@ const Blog = require('../../models/blog')
 
 beforeEach(async () => {
   await Blog.deleteMany({})
-
-  for (let blog of helper.initialBlogs) {
-    let blogObject = new Blog(blog)
-    await blogObject.save()
-  }
+  await Blog.insertMany(helper.initialBlogs)
 })
 
-test('blogs are returned as json', async () => {
-  await api
-    .get('/api/blogs')
-    .expect(200)
-    .expect('Content-Type', /application\/json/)
+describe('when there is initially some blogs saved', () => {
+  test('blogs are returned as json', async () => {
+    await api
+      .get('/api/blogs')
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+  })
 })
 
-test('query if a blog has id or _id', async () => {
-  const singleBlog = await helper.blogsInDb()
+describe('viewing a specific note', () => {
+  test('query if a blog has id or _id', async () => {
+    const singleBlog = await helper.blogsInDb()
 
-  expect(singleBlog[0].id).toBeDefined()
-  expect(singleBlog[0]._id).toBe(undefined)
+    expect(singleBlog[0].id).toBeDefined()
+    expect(singleBlog[0]._id).toBe(undefined)
+  })
 })
 
-test('a valid blog can be added', async () => {
-  const newBlog = {
-    title: 'Test an app',
-    author: 'Jhon Doe',
-    url: 'https://fullstackopen.com/',
-    likes: 4
-  }
+describe('addition of a new blog', () => {
+  test('a valid blog can be added', async () => {
+    const newBlog = {
+      title: 'Test an app',
+      author: 'Jhon Doe',
+      url: 'https://fullstackopen.com/',
+      likes: 4
+    }
 
-  await api
-    .post('/api/blogs')
-    .send(newBlog)
-    .expect(201)
-    .expect('Content-Type', /application\/json/)
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
 
-  const blogsAtEnd = await helper.blogsInDb()
-  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1)
+    const blogsAtEnd = await helper.blogsInDb()
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1)
 
-  const titles = blogsAtEnd.map(t => t.title)
-  expect(titles).toContain('Test an app')
+    const titles = blogsAtEnd.map(t => t.title)
+    expect(titles).toContain('Test an app')
+  })
+
+  test('verify if likes property is missing then it defaults to 0', async () => {
+    const newBlog = {
+      title: 'Test an app',
+      author: 'Jhon Doe',
+      url: 'https://fullstackopen.com/'
+    }
+
+    const response = await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    expect(response.body.likes).toBeDefined()
+    expect(response.body.likes).toBe(0)
+  })
+
+  test('blog without url is not added', async () => {
+    const newBlog = {
+      title: 'Test an app',
+      author: 'Jhon Doe'
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+
+    const blogsAtEnd = await helper.blogsInDb()
+
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+  })
 })
 
-test('verify if likes property is missing then it defaults to 0', async () => {
-  const newBlog = {
-    title: 'Test an app',
-    author: 'Jhon Doe',
-    url: 'https://fullstackopen.com/'
-  }
+describe('deletion of a blog', () => {
+  test('succeeds with status code 204 if id is valid', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToDelete = blogsAtStart[0]
 
-  const response = await api
-    .post('/api/blogs')
-    .send(newBlog)
-    .expect(201)
-    .expect('Content-Type', /application\/json/)
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .expect(204)
 
-  expect(response.body.likes).toBeDefined()
-  expect(response.body.likes).toBe(0)
-})
+    const blogsAtEnd = await helper.blogsInDb()
 
-test('blog without url is not added', async () => {
-  const newBlog = {
-    title: 'Test an app',
-    author: 'Jhon Doe'
-  }
+    expect(blogsAtEnd).toHaveLength(
+      helper.initialBlogs.length - 1
+    )
 
-  await api
-    .post('/api/blogs')
-    .send(newBlog)
-    .expect(400)
+    const titles = blogsAtEnd.map(r => r.title)
 
-  const blogsAtEnd = await helper.blogsInDb()
-
-  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+    expect(titles).not.toContain(blogToDelete.title)
+  })
 })
 
 afterAll(() => {
