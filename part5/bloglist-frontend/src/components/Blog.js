@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import blogService from '../services/blogs'
+import PropTypes from 'prop-types'
 
-const Blog = ({ blog, setUpdate }) => {
+const Blog = ({ blog, handleLikes, handleRemoving }) => {
   const [showFull, setShowFull] = useState(false)
 
   const blogStyle = {
@@ -12,31 +12,16 @@ const Blog = ({ blog, setUpdate }) => {
     marginBottom: 5,
   }
 
-  const handleLikes = async () => {
-    await blogService.update({
-      id: blog.id,
-      likes: blog.likes + 1,
-    })
-
-    setUpdate(Math.floor(Math.random() * 1000))
-  }
-
-  const handleRemove = async () => {
-    const result = window.confirm(`Remove ${blog.title} by ${blog.author}`)
-
-    if (result) await blogService.remove({ id: blog.id })
-    setUpdate(Math.floor(Math.random() * 100))
-  }
-
   const showFullBlog = () => {
     return (
       <div>
         <p>{blog.url}</p>
         <p>
-          {blog.likes} <button onClick={() => handleLikes()}>like</button>
+          {blog.likes}{' '}
+          <button onClick={() => handleLikes(blog.id, blog.likes)}>like</button>
         </p>
-        <p>{blog.author}</p>
-        <button onClick={() => handleRemove()}>Remove</button>
+        <p>{blog.user.name}</p>
+        <button onClick={() => handleRemoving(blog)}>Remove</button>
       </div>
     )
   }
@@ -51,6 +36,16 @@ const Blog = ({ blog, setUpdate }) => {
       {showFull && showFullBlog()}
     </div>
   )
+}
+
+Blog.propTypes = {
+  setUpdate: PropTypes.func,
+  blog: PropTypes.shape({
+    title: PropTypes.string.isRequired,
+    author: PropTypes.string.isRequired,
+    url: PropTypes.string.isRequired,
+    likes: PropTypes.string.isRequired,
+  }),
 }
 
 export default Blog

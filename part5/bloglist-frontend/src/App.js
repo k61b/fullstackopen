@@ -91,6 +91,25 @@ const App = () => {
     }
   }
 
+  const handleLikes = async (id, likes) => {
+    await blogService.update({
+      id: id,
+      likes: likes + 1,
+    })
+    setUpdate(Math.floor(Math.random() * 1000))
+  }
+
+  const handleRemoving = async (blog) => {
+    const result = window.confirm(`Remove ${blog.title} by ${blog.author}`)
+
+    if (result) {
+      await blogService.remove({
+        id: blog.id,
+      })
+      setUpdate(Math.floor(Math.random() * 1000))
+    }
+  }
+
   const loginForm = () => (
     <Togglable buttonLabel="log in">
       <LoginForm
@@ -129,7 +148,14 @@ const App = () => {
           {userInfo()}
           {blogForm()}
           {blogs.sort((a, b) => (a.likes > b.likes ? -1 : 1)) &&
-            blogs.map((blog) => <Blog blog={blog} setUpdate={setUpdate} />)}
+            blogs.map((blog) => (
+              // eslint-disable-next-line react/jsx-key
+              <Blog
+                blog={blog}
+                handleLikes={handleLikes}
+                handleRemoving={handleRemoving}
+              />
+            ))}
         </div>
       )}
     </div>
