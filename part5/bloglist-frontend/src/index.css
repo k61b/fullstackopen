@@ -8,9 +8,9 @@
 }
 
 .notification--success {
-  color: green;
+  color: rgb(0, 128, 0);
 }
 
 .notification--error {
-  color: red;
+  color: rgb(255, 0, 0);
 }
