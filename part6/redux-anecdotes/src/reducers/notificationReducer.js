@@ -1,3 +1,5 @@
+let timeId = 0
+
 const notificationReducer = (state = null, action) => {
   switch (action.type) {
     case 'SHOW_NOTIFICATION': {
@@ -10,13 +12,8 @@ const notificationReducer = (state = null, action) => {
 
 export const showNotification = (notification, time) => {
   return async (dispatch) => {
-    dispatch({
-      type: 'SHOW_NOTIFICATION',
-      data: {
-        notification,
-      },
-    })
-    setTimeout(
+    clearTimeout(timeId)
+    timeId = setTimeout(
       () =>
         dispatch({
           type: 'SHOW_NOTIFICATION',
@@ -26,6 +23,13 @@ export const showNotification = (notification, time) => {
         }),
       time * 1000
     )
+
+    dispatch({
+      type: 'SHOW_NOTIFICATION',
+      data: {
+        notification,
+      },
+    })
   }
 }
 
