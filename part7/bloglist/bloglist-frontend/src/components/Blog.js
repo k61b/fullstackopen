@@ -1,9 +1,12 @@
 import React, { useState } from 'react'
-import PropTypes from 'prop-types'
+import { likeBlog, deleteBlog } from '../reducers/blogReducer'
+import {
+  setSuccessMessage,
+  setErrorMessage,
+} from '../reducers/notificationReducer'
+import { useDispatch } from 'react-redux'
 
-const Blog = ({ blog, handleLikes, handleRemoving }) => {
-  const [showFull, setShowFull] = useState(false)
-
+const Blog = ({ blog }) => {
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 2,
@@ -12,40 +15,69 @@ const Blog = ({ blog, handleLikes, handleRemoving }) => {
     marginBottom: 5,
   }
 
-  const showFullBlog = () => {
-    return (
-      <div>
-        <p>{blog.url}</p>
-        <p>
-          {blog.likes}{' '}
-          <button className='like' onClick={() => handleLikes(blog.id, blog.likes)}>like</button>
-        </p>
-        <p>{blog.user.name}</p>
-        <button className='remove' onClick={() => handleRemoving(blog)}>Remove</button>
-      </div>
-    )
+  const dispatch = useDispatch()
+  const [showFull, setShowFull] = useState(false)
+
+  const toggleShow = () => {
+    setShowFull(!showFull)
+  }
+
+  const addLike = (id, likes) => {
+    try {
+      dispatch(likeBlog(id, likes + 1))
+      dispatch(
+        setSuccessMessage(`new like to blog ${blog.title} by ${blog.author}`)
+      )
+    } catch (error) {
+      dispatch(setErrorMessage(error))
+    }
+  }
+
+  const removeBlog = () => {
+    const result = window.confirm(`Remove ${blog.title} by ${blog.author}`)
+
+    if (result) {
+      try {
+        dispatch(
+          setSuccessMessage(`blog ${blog.title} by ${blog.author} delete`)
+        )
+        dispatch(deleteBlog(blog.id))
+      } catch (error) {
+        dispatch(setErrorMessage(error))
+      }
+    }
   }
 
   return (
     <div style={blogStyle}>
-      <p>{blog.title}</p>
-      <i>{blog.author}</i>
-      <button onClick={() => setShowFull(!showFull)}>
-        {showFull ? 'hide' : 'view'}
-      </button>
-      {showFull && showFullBlog()}
+      <div>
+        <p className="title">
+          {blog.title}
+          <button className="view" onClick={toggleShow}>
+            view
+          </button>
+        </p>
+        <p className="author">{blog.author}</p>
+      </div>
+      {showFull && (
+        <div className="show-full">
+          <p>{blog.url}</p>
+          <p>
+            likes <span className="likes">{blog.likes}</span>
+            <button
+              className="like"
+              onClick={() => addLike(blog.id, blog.likes)}
+            >
+              like
+            </button>
+          </p>
+          <button className="remove" onClick={() => removeBlog(blog)}>
+            remove
+          </button>
+        </div>
+      )}
     </div>
   )
-}
-
-Blog.propTypes = {
-  setUpdate: PropTypes.func,
-  blog: PropTypes.shape({
-    title: PropTypes.string.isRequired,
-    author: PropTypes.string.isRequired,
-    url: PropTypes.string.isRequired,
-    likes: PropTypes.string.isRequired,
-  }),
 }
 
 export default Blog

@@ -1,6 +1,13 @@
+/* eslint-disable react/react-in-jsx-scope */
 import ReactDOM from 'react-dom'
+import { Provider } from 'react-redux'
 import App from './App.js'
 import './index.css'
+import store from './store'
 
-// eslint-disable-next-line react/react-in-jsx-scope
-ReactDOM.render(<App />, document.getElementById('root'))
+ReactDOM.render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  document.getElementById('root')
+)
