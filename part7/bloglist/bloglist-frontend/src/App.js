@@ -6,7 +6,7 @@ import {
   setSuccessMessage,
   setErrorMessage,
 } from './reducers/notificationReducer'
-import { setUser, userLogout } from './reducers/userReducer'
+import { setUser } from './reducers/userReducer'
 
 import Blog from './components/Blog'
 import Notification from './components/Notification'
@@ -15,6 +15,7 @@ import BlogForm from './components/BlogForm'
 import Togglable from './components/Togglable'
 import Users from './components/Users'
 import SingleUser from './components/SingleUser'
+import Navigation from './components/Navigation'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -31,10 +32,6 @@ const App = () => {
     dispatch(initializeBlogs())
   }, [dispatch])
 
-  const handleLogout = async () => {
-    dispatch(userLogout())
-  }
-
   // TODO: Check Control
   const createBlog = async (blogObject) => {
     try {
@@ -50,37 +47,40 @@ const App = () => {
     }
   }
 
-  const userInfo = () => (
-    <div>
-      {user.name} logged in <button onClick={handleLogout}>Logout</button>
-    </div>
-  )
-
   const blogForm = () => (
     <Togglable buttonLabel="Create Blog" ref={blogFromRef}>
       <BlogForm createBlog={createBlog} />
     </Togglable>
   )
 
-  const match = useRouteMatch('/users/:id')
-  const userBlogs = match
-    ? blogs.filter((blog) => blog.user.id === match.params.id)
+  const matchUserId = useRouteMatch('/users/:id')
+  const userBlogs = matchUserId
+    ? blogs.filter((blog) => blog.user.id === matchUserId.params.id)
     : null
 
-  const padding = { padding: 5 }
+  const matchBlogId = useRouteMatch('/blogs/:id')
+  const currentBlog = matchBlogId
+    ? blogs.find((blog) => blog.id === matchBlogId.params.id)
+    : null
+
+  const blogStyle = {
+    paddingTop: 10,
+    paddingLeft: 2,
+    border: 'solid',
+    borderWidth: 1,
+    marginBottom: 5,
+  }
 
   return (
     <div>
-      <Link style={padding} to="/">
-        Blogs
-      </Link>
-      <Link style={padding} to="/users">
-        Users
-      </Link>
+      <Navigation />
       <Notification message={notification} />
       <Switch>
         <Route path="/users/:id">
           <SingleUser blogs={userBlogs} />
+        </Route>
+        <Route path="/blogs/:id">
+          <Blog blog={currentBlog} />
         </Route>
         <Route path="/users">
           <Users />
@@ -94,12 +94,13 @@ const App = () => {
           ) : (
             <div>
               <h2>blogs</h2>
-              {userInfo()}
               {blogForm()}
               {blogs
                 .sort((a, b) => (a.likes > b.likes ? -1 : 1))
                 .map((blog) => (
-                  <Blog key={blog.id} blog={blog} />
+                  <div key={blog.id} style={blogStyle}>
+                    <Link to={`/blogs/${blog.id}`}>{blog.title}</Link>
+                  </div>
                 ))}
               <Users />
             </div>
