@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import { Switch, Route, Link, useRouteMatch } from 'react-router-dom'
 import { initializeBlogs, addBlog } from './reducers/blogReducer'
 import {
   setSuccessMessage,
@@ -12,6 +13,8 @@ import Notification from './components/Notification'
 import LoginForm from './components/LoginForm'
 import BlogForm from './components/BlogForm'
 import Togglable from './components/Togglable'
+import Users from './components/Users'
+import SingleUser from './components/SingleUser'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -59,26 +62,50 @@ const App = () => {
     </Togglable>
   )
 
+  const match = useRouteMatch('/users/:id')
+  const userBlogs = match
+    ? blogs.filter((blog) => blog.user.id === match.params.id)
+    : null
+
+  const padding = { padding: 5 }
+
   return (
     <div>
+      <Link style={padding} to="/">
+        Blogs
+      </Link>
+      <Link style={padding} to="/users">
+        Users
+      </Link>
       <Notification message={notification} />
-      {user === null ? (
-        <div>
-          <h2>Log in to application</h2>
-          <LoginForm />
-        </div>
-      ) : (
-        <div>
-          <h2>blogs</h2>
-          {userInfo()}
-          {blogForm()}
-          {blogs
-            .sort((a, b) => (a.likes > b.likes ? -1 : 1))
-            .map((blog) => (
-              <Blog key={blog.id} blog={blog} />
-            ))}
-        </div>
-      )}
+      <Switch>
+        <Route path="/users/:id">
+          <SingleUser blogs={userBlogs} />
+        </Route>
+        <Route path="/users">
+          <Users />
+        </Route>
+        <Route path="/">
+          {user === null ? (
+            <div>
+              <h2>Log in to application</h2>
+              <LoginForm />
+            </div>
+          ) : (
+            <div>
+              <h2>blogs</h2>
+              {userInfo()}
+              {blogForm()}
+              {blogs
+                .sort((a, b) => (a.likes > b.likes ? -1 : 1))
+                .map((blog) => (
+                  <Blog key={blog.id} blog={blog} />
+                ))}
+              <Users />
+            </div>
+          )}
+        </Route>
+      </Switch>
     </div>
   )
 }

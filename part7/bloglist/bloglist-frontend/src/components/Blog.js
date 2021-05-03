@@ -5,6 +5,7 @@ import {
   setErrorMessage,
 } from '../reducers/notificationReducer'
 import { useDispatch } from 'react-redux'
+import blogService from '../services/blogs'
 
 const Blog = ({ blog }) => {
   const blogStyle = {
@@ -17,9 +18,13 @@ const Blog = ({ blog }) => {
 
   const dispatch = useDispatch()
   const [showFull, setShowFull] = useState(false)
+  const [allowRemove, setAllowRemove] = useState(false)
 
   const toggleShow = () => {
     setShowFull(!showFull)
+    const user = blogService.getUserInfo()
+    const blogUser = blog.user.id || blog.user
+    setAllowRemove(blogUser === user.id)
   }
 
   const addLike = (id, likes) => {
@@ -71,9 +76,11 @@ const Blog = ({ blog }) => {
               like
             </button>
           </p>
-          <button className="remove" onClick={() => removeBlog(blog)}>
-            remove
-          </button>
+          {allowRemove && (
+            <button className="remove" onClick={() => removeBlog(blog)}>
+              remove
+            </button>
+          )}
         </div>
       )}
     </div>
