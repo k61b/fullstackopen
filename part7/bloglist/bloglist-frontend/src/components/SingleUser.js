@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 const SingleUser = ({ blogs }) => {
   if (!blogs[0]) return <p>There is no Blog</p>
@@ -9,7 +10,11 @@ const SingleUser = ({ blogs }) => {
       <p>added blogs</p>
       <ul>
         {blogs.map((blog) => {
-          return <li key={blog.id}>{blog.title}</li>
+          return (
+            <li key={blog.id}>
+              <Link to={`/blogs/${blog.id}`}>{blog.title}</Link>
+            </li>
+          )
         })}
       </ul>
     </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
-import { likeBlog, deleteBlog } from '../reducers/blogReducer'
+import { likeBlog, deleteBlog, addComment } from '../reducers/blogReducer'
 import {
   setSuccessMessage,
   setErrorMessage,
@@ -46,6 +46,12 @@ const Blog = ({ blog }) => {
     }
   }
 
+  const createComment = (e) => {
+    e.preventDefault()
+    dispatch(addComment(blog.id, e.target.comment.value))
+    e.target.comment.value = ''
+  }
+
   return (
     <div>
       <h1 className="title">{blog.title}</h1>
@@ -63,6 +69,18 @@ const Blog = ({ blog }) => {
             remove
           </button>
         )}
+      </div>
+      <div className="comments">
+        <h3>Comments</h3>
+        <form onSubmit={createComment}>
+          <input type="text" name="comment" />
+          <button type="submit">add comment</button>
+        </form>
+        <ul>
+          {blog.comments.map((comment) => (
+            <li key={comment.id}>{comment}</li>
+          ))}
+        </ul>
       </div>
     </div>
   )
