@@ -1,6 +1,9 @@
 import React, { useEffect, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Switch, Route, Link, useRouteMatch } from 'react-router-dom'
+
+import { Container } from '@material-ui/core'
+
 import { initializeBlogs, addBlog } from './reducers/blogReducer'
 import {
   setSuccessMessage,
@@ -72,7 +75,7 @@ const App = () => {
   }
 
   return (
-    <div>
+    <Container maxWidth="xl">
       <Navigation />
       <Notification message={notification} />
       <Switch>
@@ -107,7 +110,7 @@ const App = () => {
           )}
         </Route>
       </Switch>
-    </div>
+    </Container>
   )
 }
 
