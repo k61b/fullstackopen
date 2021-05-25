@@ -1,5 +1,5 @@
 const { ApolloServer, gql } = require('apollo-server')
-const uuid = require('uuid')
+const { v1: uuid } = require('uuid')
 
 let authors = [
   {
@@ -96,8 +96,17 @@ const typeDefs = gql`
   type Query {
     authorCount: Int!
     bookCount: Int!
-    allBooks: [Book!]!
+    allBooks(author: String, genre: String): [Book!]!
     allAuthors: [Author!]!
+  }
+  type Mutation {
+    addBook(
+      title: String!
+      published: Int!
+      author: String!
+      genres: [String!]!
+    ): Book
+    editAuthor(name: String!, setBornTo: Int!): Author
   }
 `
 
@@ -105,12 +114,49 @@ const resolvers = {
   Query: {
     authorCount: () => authors.length,
     bookCount: () => books.length,
-    allBooks: () => books,
+    allBooks: (root, args) => {
+      let filter = false
+      if (args.author) filter = (book) => book.author === args.author
+      if (args.genre) filter = (book) => book.genres.includes(args.genre)
+      if (args.author && args.genre)
+        filter = (book) =>
+          book.author === args.author && book.genres.includes(args.genre)
+
+      return filter ? books.filter(filter) : books
+    },
     allAuthors: () => authors,
   },
   Author: {
     bookCount: (root) =>
       books.filter((book) => book.author === root.name).length,
+  },
+  Mutation: {
+    addBook: (root, args) => {
+      const authorExist = authors.find((author) => author.name === args.author)
+      if (!authorExist) {
+        const newAuthor = {
+          name: args.author,
+          id: uuid(),
+        }
+        authors = authors.concat(newAuthor)
+      }
+      const book = { ...args, id: uuid() }
+      books = books.concat(book)
+      return book
+    },
+    editAuthor: (root, args) => {
+      const authorExist = authors.find((author) => author.name === args.name)
+      if (!authorExist) return null
+      authors = authors.map((author) =>
+        author.name === args.name
+          ? { ...author, name: args.name, born: args.setBornTo }
+          : author
+      )
+      return {
+        name: args.name,
+        born: args.setBornTo,
+      }
+    },
   },
 }
 
