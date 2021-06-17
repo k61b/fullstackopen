@@ -12,7 +12,7 @@ const Recommend = (props) => {
   const [meBooks, setMeBooks] = useState([])
 
   useEffect(() => {
-    if (meResult.data) {
+    if (meResult.data && meResult.data.me) {
       setMe(meResult.data.me)
       getBooks({ variables: { genre: meResult.data.me.favoriteGenre } })
     }
@@ -31,7 +31,7 @@ const Recommend = (props) => {
       <h2>recommendations</h2>
       <p>
         books in your favorite genre patterns:{' '}
-        <strong>{me.favoriteGenre}</strong>
+        <strong>{me && me.favoriteGenre}</strong>
       </p>
       <BooksTable books={meBooks} />
     </div>

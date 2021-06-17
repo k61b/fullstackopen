@@ -3,6 +3,7 @@ const {
   gql,
   UserInputError,
   AuthenticationError,
+  PubSub,
 } = require('apollo-server')
 const { v1: uuid } = require('uuid')
 const jwt = require('jsonwebtoken')
@@ -13,6 +14,10 @@ const User = require('./models/user')
 
 const MONGODB_URI = 'mongodb://localhost:27017/fullstackopen'
 const JWT_SECRET = 'test'
+
+const pubsub = new PubSub()
+
+mongoose.set('useFindAndModify', false)
 
 mongoose
   .connect(MONGODB_URI, {
@@ -68,6 +73,10 @@ const typeDefs = gql`
     createUser(username: String!, favoriteGenre: String!): User
     login(username: String!, password: String!): Token
   }
+
+  type Subscription {
+    bookAdded: Book!
+  }
 `
 
 const resolvers = {
@@ -94,10 +103,6 @@ const resolvers = {
       return await Book.find(filter).populate('author')
     },
     allAuthors: () => Author.find({}),
-  },
-  Author: {
-    bookCount: async (root) =>
-      await Book.find({ author: root.id }).countDocuments(),
   },
   Mutation: {
     createUser: async (root, args) => {
@@ -153,12 +158,21 @@ const resolvers = {
       })
       try {
         await book.save()
+        const bookCount = await Book.find({
+          author: author.id,
+        }).countDocuments()
+        await Author.findOneAndUpdate(
+          { name: author.name },
+          { bookCount: bookCount }
+        )
         book = await book.populate('author').execPopulate()
       } catch (error) {
         throw new UserInputError(error.message, {
           invalidArgs: args,
         })
       }
+      pubsub.publish('BOOK_ADDED', { bookAdded: book })
+
       return book
     },
     editAuthor: async (root, args, context) => {
@@ -183,6 +197,11 @@ const resolvers = {
       return author
     },
   },
+  Subscription: {
+    bookAdded: {
+      subscribe: () => pubsub.asyncIterator(['BOOK_ADDED']),
+    },
+  },
 }
 
 const server = new ApolloServer({
@@ -198,6 +217,7 @@ const server = new ApolloServer({
   },
 })
 
-server.listen().then(({ url }) => {
+server.listen().then(({ url, subscriptionsUrl }) => {
   console.log(`Server ready at ${url}`)
+  console.log(`Subscriptions ready at ${subscriptionsUrl}`)
 })
